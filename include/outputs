@@ -15,15 +15,15 @@
 textPass(){
   PASS_COUNTER=$((PASS_COUNTER+1))
   if [[ "$MODE" == "csv" ]]; then
-    if [[ $2 ]]; then
-      REPREGION=$2
+    if [[ $4 ]]; then
+      REPREGION=$4
     else
       REPREGION=$REGION
     fi
     echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}PASS${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1"
   elif [[ "$MODE" == "json" ]]; then
-    if [[ $2 ]]; then
-      REPREGION=$2
+    if [[ $4 ]]; then
+      REPREGION=$4
     else
       REPREGION=$REGION
     fi
@@ -32,6 +32,8 @@ textPass(){
     --arg ACCOUNT_NUM "$ACCOUNT_NUM" \
     --arg TITLE_TEXT "$TITLE_TEXT" \
     --arg MESSAGE "$(echo -e "${1}" | sed -e 's/^[[:space:]]*//')" \
+    --arg RESOURCEARN "$(echo -e "${2}" | sed -e 's/^[[:space:]]*//')" \
+    --arg RESOURCENAME "$(echo -e "${3}" | sed -e 's/^[[:space:]]*//')" \
     --arg SCORED "$ITEM_SCORED" \
     --arg ITEM_LEVEL "$ITEM_LEVEL" \
     --arg TITLE_ID "$TITLE_ID" \
@@ -42,6 +44,8 @@ textPass(){
       "Account Number": $ACCOUNT_NUM,
       "Control": $TITLE_TEXT,
       "Message": $MESSAGE,
+      "ResourceARN": $RESOURCEARN,
+      "ResourceName": $RESOURCENAME,
       "Status": "Pass",
       "Scored": $SCORED,
       "Level": $ITEM_LEVEL,
@@ -50,21 +54,21 @@ textPass(){
       "Timestamp": $TIMESTAMP,
     }'
   else
-    echo "      $OK PASS!$NORMAL $1"
+    echo "      $OK PASS!$NORMAL $1  $2  $3  $4"
   fi
 }
 
 textInfo(){
   if [[ "$MODE" == "csv" ]]; then
-    if [[ $2 ]]; then
-      REPREGION=$2
+    if [[ $4 ]]; then
+      REPREGION=$4
     else
       REPREGION=$REGION
     fi
     echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}INFO${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1"
   elif [[ "$MODE" == "json" ]]; then
-    if [[ $2 ]]; then
-      REPREGION=$2
+    if [[ $4 ]]; then
+      REPREGION=$4
     else
       REPREGION=$REGION
     fi
@@ -73,6 +77,8 @@ textInfo(){
     --arg ACCOUNT_NUM "$ACCOUNT_NUM" \
     --arg TITLE_TEXT "$TITLE_TEXT" \
     --arg MESSAGE "$(echo -e "${1}" | sed -e 's/^[[:space:]]*//')" \
+    --arg RESOURCEARN "$(echo -e "${2}" | sed -e 's/^[[:space:]]*//')" \
+    --arg RESOURCENAME "$(echo -e "${3}" | sed -e 's/^[[:space:]]*//')" \
     --arg SCORED "$ITEM_SCORED" \
     --arg ITEM_LEVEL "$ITEM_LEVEL" \
     --arg TITLE_ID "$TITLE_ID" \
@@ -83,6 +89,8 @@ textInfo(){
       "Account Number": $ACCOUNT_NUM,
       "Control": $TITLE_TEXT,
       "Message": $MESSAGE,
+      "ResourceARN": $RESOURCEARN,
+      "ResourceName": $RESOURCENAME,
       "Status": "Info",
       "Scored": $SCORED,
       "Level": $ITEM_LEVEL,
@@ -91,7 +99,7 @@ textInfo(){
       "Timestamp": $TIMESTAMP,
     }'
   else
-    echo "      $NOTICE INFO! $1 $NORMAL"
+    echo "      $NOTICE INFO! $1 $NORMAL $2  $3  $4"
   fi
 }
 
@@ -99,15 +107,15 @@ textFail(){
   FAIL_COUNTER=$((FAIL_COUNTER+1))
   EXITCODE=3
   if [[ "$MODE" == "csv" ]]; then
-    if [[ $2 ]]; then
-      REPREGION=$2
+    if [[ $4 ]]; then
+      REPREGION=$4
     else
       REPREGION=$REGION
     fi
     echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}FAIL${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1"
   elif [[ "$MODE" == "json" ]]; then
-    if [[ $2 ]]; then
-      REPREGION=$2
+    if [[ $4 ]]; then
+      REPREGION=$4
     else
       REPREGION=$REGION
     fi
@@ -116,6 +124,8 @@ textFail(){
     --arg ACCOUNT_NUM "$ACCOUNT_NUM" \
     --arg TITLE_TEXT "$TITLE_TEXT" \
     --arg MESSAGE "$(echo -e "${1}" | sed -e 's/^[[:space:]]*//')" \
+    --arg RESOURCEARN "$(echo -e "${2}" | sed -e 's/^[[:space:]]*//')" \
+    --arg RESOURCENAME "$(echo -e "${3}" | sed -e 's/^[[:space:]]*//')" \
     --arg SCORED "$ITEM_SCORED" \
     --arg ITEM_LEVEL "$ITEM_LEVEL" \
     --arg TITLE_ID "$TITLE_ID" \
@@ -126,6 +136,8 @@ textFail(){
       "Account Number": $ACCOUNT_NUM,
       "Control": $TITLE_TEXT,
       "Message": $MESSAGE,
+      "ResourceARN": $RESOURCEARN,
+      "ResourceName": $RESOURCENAME,
       "Status": "Fail",
       "Scored": $SCORED,
       "Level": $ITEM_LEVEL,
@@ -134,7 +146,7 @@ textFail(){
       "Timestamp": $TIMESTAMP,
     }'
   else
-    echo "      $BAD FAIL! $1 $NORMAL"
+    echo "      $BAD FAIL! $1 $NORMAL $2  $3  $4"
   fi
 }
 

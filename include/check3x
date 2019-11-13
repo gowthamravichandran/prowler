@@ -45,7 +45,7 @@ check3x(){
       for group in $CHECK_OK; do
         metric=${group#*:}
         group=${group%:*}
-        textPass "CloudWatch group $group found with metric filter $metric and alarms set"
+        textPass "CloudWatch group $group found with metric filter $metric and alarms set" "arn:aws:logs:$CLOUDWATCH_LOGGROUP_REGION:$CLOUDWATCH_ACCOUNT_ID:log-group:$group" "$group"
       done
     fi
     if [[ $CHECK_WARN ]]; then
@@ -53,9 +53,9 @@ check3x(){
         case $group in
            *:*) metric=${group#*:}
                 group=${group%:*}
-                textFail "CloudWatch group $group found with metric filter $metric but no alarms associated"
+                textFail "CloudWatch group $group found with metric filter $metric but no alarms associated" "arn:aws:logs:$CLOUDWATCH_LOGGROUP_REGION:$CLOUDWATCH_ACCOUNT_ID:log-group:$group" "$group"
                 ;;
-             *) textFail "CloudWatch group $group found but no metric filters or alarms associated"
+             *) textFail "CloudWatch group $group found but no metric filters or alarms associated" "arn:aws:logs:$CLOUDWATCH_LOGGROUP_REGION:$CLOUDWATCH_ACCOUNT_ID:log-group:$group" "$group"
         esac
       done
     fi

@@ -22,7 +22,8 @@ check121(){
   LIST_USERS_KEY1_ACTIVE=$(for user in $LIST_USERS_KEY1_NA; do grep "^${user}," $TEMP_REPORT_FILE|awk -F, '{ print $1,$9 }'|grep "true$"|awk '{ print $1 }'|sed 's/[[:blank:]]+/,/g' ; done)
   if [[ $LIST_USERS_KEY1_ACTIVE ]]; then
     for user in $LIST_USERS_KEY1_ACTIVE; do
-      textFail "$user has never used Access Key 1"
+      USER_ARN=$($AWSCLI $PROFILE_OPT iam  get-user --user-name $user --output text --query "User.Arn")
+      textFail "$user has never used Access Key 1" "$USER_ARN" "$user"
     done
   else
     textPass "No users found with Access Key 1 never used"
@@ -32,7 +33,8 @@ check121(){
   LIST_USERS_KEY2_ACTIVE=$(for user in $LIST_USERS_KEY2_NA; do grep "^${user}," $TEMP_REPORT_FILE|awk -F, '{ print $1,$14 }'|grep "true$" |awk '{ print $1 }' ; done)
   if [[ $LIST_USERS_KEY2_ACTIVE ]]; then
     for user in $LIST_USERS_KEY2_ACTIVE; do
-      textFail "$user has never used Access Key 2"
+      USER_ARN=$($AWSCLI $PROFILE_OPT iam  get-user --user-name $user --output text --query "User.Arn")
+      textFail "$user has never used Access Key 2" "$USER_ARN" "$user"
     done
   else
     textPass "No users found with Access Key 2 never used"

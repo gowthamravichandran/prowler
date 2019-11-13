@@ -19,14 +19,18 @@ check22(){
  
 	for regx in $REGIONS; do
 	LIST_OF_TRAILS=$($AWSCLI cloudtrail describe-trails $PROFILE_OPT --region $regx --query 'trailList[*].Name' --output text --no-include-shadow-trails)
+	LIST_OF_TRAILS_ARN=$($AWSCLI cloudtrail describe-trails $PROFILE_OPT --region $regx --query 'trailList[*].TrailARN' --output text --no-include-shadow-trails)
+	LIST_OF_TRAILS_ARN_ARR=($(echo "$LIST_OF_TRAILS_ARN" | tr ' ' '\n'))
 	if [[ $LIST_OF_TRAILS ]];then
+		declare -i INDEX=0
 		for trail in $LIST_OF_TRAILS;do
 		LOGFILEVALIDATION_TRAIL_STATUS=$($AWSCLI cloudtrail describe-trails $PROFILE_OPT --region $regx --query 'trailList[*].LogFileValidationEnabled' --output text --trail-name-list $trail)
 		if [[ "$LOGFILEVALIDATION_TRAIL_STATUS" == 'False' ]];then
-			textFail "$trail trail in $regx has not log file validation enabled"
+			textFail "$trail trail in $regx has not log file validation enabled" "${LIST_OF_TRAILS_ARN_ARR[$INDEX]}" "$trail"
 		else
-			textPass "$trail trail in $regx has log file validation enabled"
+			textPass "$trail trail in $regx has log file validation enabled" "${LIST_OF_TRAILS_ARN_ARR[$INDEX]}" "$trail"
 		fi
+		((INDEX = INDEX + 1))
 		done
 	fi
 	done

@@ -23,25 +23,32 @@ check28(){
         for key in $CHECK_KMS_KEYLIST; do
           $AWSCLI kms describe-key --key-id $key $PROFILE_OPT --region $regx --query 'KeyMetadata.{key:KeyId,state:KeyState,man:KeyManager}' --output text|grep Enabled$|grep -v AWS| awk '{ print $1 }'
         done )
+      CHECK_KMS_KEYLIST_NO_DEFAULT_ARN=$(
+        for key in $CHECK_KMS_KEYLIST; do
+          $AWSCLI kms describe-key --key-id $key $PROFILE_OPT --region $regx --query 'KeyMetadata.{key:KeyId,state:KeyState,man:KeyManager,arn:Arn}' --output text|grep Enabled$|grep -v AWS| awk '{ print $1 }'
+        done )
+      CHECK_KMS_KEYLIST_NO_DEFAULT_ARN_ARR=($(echo "$CHECK_KMS_KEYLIST_NO_DEFAULT_ARN" | tr ' ' '\n'))
       if [[ $CHECK_KMS_KEYLIST_NO_DEFAULT ]]; then
+        declare -i INDEX=0
         for key in $CHECK_KMS_KEYLIST_NO_DEFAULT; do
           CHECK_KMS_KEY_TYPE=$($AWSCLI kms describe-key --key-id $key $PROFILE_OPT --region $regx --query 'KeyMetadata.Origin' | sed 's/["]//g')
             if [[ "$CHECK_KMS_KEY_TYPE" == "EXTERNAL" ]];then
-              textPass "$regx: Key $key in Region $regx Customer Uploaded Key Material." "$regx"
+              textPass "$regx: Key $key in Region $regx Customer Uploaded Key Material." "" "" "$regx"
             else
               CHECK_KMS_KEY_ROTATION=$($AWSCLI kms get-key-rotation-status --key-id $key $PROFILE_OPT --region $regx --output text)
               if [[ "$CHECK_KMS_KEY_ROTATION" == "True" ]];then
-                textPass "$regx: Key $key is set correctly" "$regx"
+                textPass "$regx: Key $key is set correctly" "${CHECK_KMS_KEYLIST_NO_DEFAULT_ARN_ARR[$INDEX]}" "$key" "$regx"
               else
-                textFail "$regx: Key $key is not set to rotate!" "$regx"
+                textFail "$regx: Key $key is not set to rotate!" "${CHECK_KMS_KEYLIST_NO_DEFAULT_ARN_ARR[$INDEX]}" "$key" "$regx"
               fi
             fi
+            ((INDEX = INDEX + 1))
         done
       else
-        textInfo "$regx: This region doesn't have CUSTOM encryption keys" "$regx"
+        textInfo "$regx: This region doesn't have CUSTOM encryption keys" "" "" "$regx"
       fi
     else
-      textInfo "$regx: This region doesn't have ANY encryption keys" "$regx"
+      textInfo "$regx: This region doesn't have ANY encryption keys" "" "" "$regx"
     fi
   done
 }

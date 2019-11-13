@@ -31,11 +31,11 @@ check26(){
           CLOUDTRAILBUCKET_LOGENABLED=$($AWSCLI s3api get-bucket-logging --bucket $bucket $PROFILE_OPT --region $REGION --query 'LoggingEnabled.TargetBucket' --output text|grep -v None)
         fi 
         if [[ $CLOUDTRAILBUCKET_LOGENABLED ]];then
-          textPass "Bucket access logging enabled in CloudTrail S3 bucket $bucket for $trail"
+          textPass "Bucket access logging enabled in CloudTrail S3 bucket $bucket for $trail" "arn:aws:s3:::$bucket" "$bucket"
         elif [ "$CLOUDTRAIL_ACCOUNT_ID" == "$ACCOUNT_ID" ];then
-          textFail "Bucket access logging is not enabled in CloudTrail S3 bucket $bucket for $trail"
+          textFail "Bucket access logging is not enabled in CloudTrail S3 bucket $bucket for $trail" "arn:aws:s3:::$bucket" "$bucket"
         else 
-          textInfo "CloudTrail S3 bucket $bucket for trail $trail is not in current account"
+          textInfo "CloudTrail S3 bucket $bucket for trail $trail is not in current account" "arn:aws:s3:::$bucket" "$bucket"
         fi
         
       else

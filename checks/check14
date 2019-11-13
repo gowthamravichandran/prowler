@@ -27,8 +27,9 @@ check14(){
         DATEROTATED1=$(cat $TEMP_REPORT_FILE | grep -v user_creation_time | grep "^${user},"| awk -F, '{ print $10 }' | grep -v "N/A" | awk -F"T" '{ print $1 }')
         HOWOLDER=$(how_older_from_today $DATEROTATED1)
 
+        USER_ARN=$($AWSCLI $PROFILE_OPT iam  get-user --user-name $user --output text --query "User.Arn")
         if [ $HOWOLDER -gt "90" ];then
-          textFail " $user has not rotated access key1 in over 90 days."
+          textFail " $user has not rotated access key1 in over 90 days." "$USER_ARN" "$user"
           C14_NUM_USERS1=$(expr $C14_NUM_USERS1 + 1)
         fi
       done
@@ -45,8 +46,9 @@ check14(){
         # check access key 2
         DATEROTATED2=$(cat $TEMP_REPORT_FILE | grep -v user_creation_time | grep "^${user},"| awk -F, '{ print $15 }' | grep -v "N/A" | awk -F"T" '{ print $1 }')
         HOWOLDER=$(how_older_from_today $DATEROTATED2)
+        USER_ARN=$($AWSCLI $PROFILE_OPT iam  get-user --user-name $user --output text --query "User.Arn")
         if [ $HOWOLDER -gt "90" ];then
-          textFail " $user has not rotated access key2 in over 90 days. "
+          textFail " $user has not rotated access key2 in over 90 days. "  "$USER_ARN" "$user"
           C14_NUM_USERS2=$(expr $C14_NUM_USERS2 + 1)
         fi
       done

@@ -17,22 +17,26 @@ CHECK_ALTERNATE_check204="check24"
 check24(){
   # "Ensure CloudTrail trails are integrated with CloudWatch Logs (Scored)"
   TRAILS_AND_REGIONS=$($AWSCLI cloudtrail describe-trails $PROFILE_OPT --region $REGION --query 'trailList[*].{Name:Name, HomeRegion:HomeRegion}' --output text | tr "	" ',')
+  TRAILS_AND_REGIONS_ARN=$($AWSCLI cloudtrail describe-trails $PROFILE_OPT --region $REGION --query 'trailList[*].{TrailARN:TrailARN}' --output text | tr "	" ',')
+  TRAILS_AND_REGIONS_ARN_ARR=($(echo "$TRAILS_AND_REGIONS_ARN" | tr ' ' '\n'))
   if [[ $TRAILS_AND_REGIONS ]];then
+    declare -i INDEX=0
     for reg_trail in $TRAILS_AND_REGIONS;do
       trail=$(echo $reg_trail | cut -d',' -f2)
       TRAIL_REGION=$(echo $reg_trail | cut -d',' -f1)
       LATESTDELIVERY_TIMESTAMP=$($AWSCLI cloudtrail get-trail-status --name $trail $PROFILE_OPT --region $TRAIL_REGION --query 'LatestCloudWatchLogsDeliveryTime' --output text|grep -v None)
       if [[ ! $LATESTDELIVERY_TIMESTAMP ]];then
-        textFail "$trail trail is not logging in the last 24h or not configured (it is in $TRAIL_REGION)"
+        textFail "$trail trail is not logging in the last 24h or not configured (it is in $TRAIL_REGION)" "${TRAILS_AND_REGIONS_ARN_ARR[$INDEX]}" "$trail"
       else
         LATESTDELIVERY_DATE=$(timestamp_to_date $LATESTDELIVERY_TIMESTAMP)
         HOWOLDER=$(how_older_from_today $LATESTDELIVERY_DATE)
         if [ $HOWOLDER -gt "1" ];then
-          textFail "$trail trail is not logging in the last 24h or not configured (it is in $TRAIL_REGION)"
+          textFail "$trail trail is not logging in the last 24h or not configured (it is in $TRAIL_REGION)" "${TRAILS_AND_REGIONS_ARN_ARR[$INDEX]}" "$trail"
         else
-          textPass "$trail trail has been logging during the last 24h (it is in $TRAIL_REGION)"
+          textPass "$trail trail has been logging during the last 24h (it is in $TRAIL_REGION)" "${TRAILS_AND_REGIONS_ARN_ARR[$INDEX]}" "$trail"
         fi
       fi
+      ((INDEX = INDEX + 1))
     done
   else
     textFail "No CloudTrail trails found!"

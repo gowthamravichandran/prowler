@@ -17,14 +17,19 @@ CHECK_ALTERNATE_check203="check23"
 check23(){
   # "Ensure the S3 bucket CloudTrail logs to is not publicly accessible (Scored)"
   CLOUDTRAILBUCKET=$($AWSCLI cloudtrail describe-trails --query 'trailList[*].S3BucketName' --output text $PROFILE_OPT --region $REGION)
+  CLOUDTRAILBUCKET_ARN=$($AWSCLI cloudtrail describe-trails --query 'trailList[*].CloudWatchLogsLogGroupArn' --output text $PROFILE_OPT --region $REGION)
+  LIST_OF_TRAILS_ARN_ARR=($(echo "$CLOUDTRAILBUCKET_ARN" | tr ' ' '\n'))
+  echo "$CLOUDTRAILBUCKET_ARN"
   if [[ $CLOUDTRAILBUCKET ]];then
+    declare -i INDEX=0
     for bucket in $CLOUDTRAILBUCKET;do
       CLOUDTRAILBUCKET_HASALLPERMISIONS=$($AWSCLI s3api get-bucket-acl --bucket $bucket --query 'Grants[?Grantee.URI==`http://acs.amazonaws.com/groups/global/AllUsers`]' $PROFILE_OPT --region $REGION --output text)
       if [[ $CLOUDTRAILBUCKET_HASALLPERMISIONS ]];then
-        textFail "check your $bucket CloudTrail bucket ACL and Policy!"
+        textFail "check your $bucket CloudTrail bucket ACL and Policy!" "arn:aws:s3:::$bucket" "$bucket"
       else
-        textPass "Bucket $bucket is set correctly"
+        textPass "Bucket $bucket is set correctly" "arn:aws:s3:::$bucket" "$bucket"
       fi
+      ((INDEX = INDEX + 1))
     done
   else
     textFail "No CloudTrail bucket found!"

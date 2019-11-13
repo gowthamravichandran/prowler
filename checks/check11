@@ -17,5 +17,8 @@ CHECK_ALTERNATE_check101="check11"
 check11(){
   # "Avoid the use of the root account (Scored)."
   COMMAND11=$(cat $TEMP_REPORT_FILE| grep '<root_account>' | cut -d, -f5,11,16 | sed 's/,/\ /g')
-  textInfo "Root account last accessed (password key_1 key_2): $COMMAND11"
+  CALLER_ARN_RAW=$($AWSCLI sts get-caller-identity --output json $PROFILE_OPT --region $REGION --query "Arn")
+  CALLER_ARN=$(echo $CALLER_ARN_RAW | tr -d '"')
+  SERVICENAME="$(cut -d':' -f3 <<<"$CALLER_ARN_RAW")"
+  textInfo "Root account last accessed (password key_1 key_2): $COMMAND11" "$CALLER_ARN" "$SERVICENAME"
 }
