@@ -22,9 +22,9 @@ extra733(){
   if [[ $LIST_SAML_PROV ]]; then
     for provider in $LIST_SAML_PROV; do
       PROVIDER_NAME=$(echo $provider| cut -d/ -f2)
-      textInfo "SAML Provider $PROVIDER_NAME has been found"
+      textInfo "SAML Provider $PROVIDER_NAME has been found" "$provider" "$PROVIDER_NAME"
     done
   else
-    textInfo "No SAML Provider found, add one and use STS"
+    textInfo "No SAML Provider found, add one and use STS" "" ""
   fi
 }

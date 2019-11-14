@@ -19,18 +19,20 @@ CHECK_ALTERNATE_check739="extra739"
 extra739(){
   for regx in $REGIONS; do
     LIST_OF_RDS_INSTANCES=$($AWSCLI rds describe-db-instances $PROFILE_OPT --region $regx --query 'DBInstances[*].DBInstanceIdentifier' --output text)
+
     if [[ $LIST_OF_RDS_INSTANCES ]];then
       for rdsinstance in $LIST_OF_RDS_INSTANCES; do
         # if retention is 0 then is disabled 
         BACKUP_RETENTION=$($AWSCLI rds describe-db-instances $PROFILE_OPT --region $regx --db-instance-identifier $rdsinstance --query 'DBInstances[*].BackupRetentionPeriod' --output text)
+        RDS_ARN=$($AWSCLI rds describe-db-instances --db-instance-identifier $rdsinstance --region $regx --query 'DBInstances[*].DBInstanceArn' --output text)
         if [[ $BACKUP_RETENTION == "0" ]]; then
-          textFail "$regx: RDS instance $rdsinstance has not backup enabled!" "$regx"
+          textFail "$regx: RDS instance $rdsinstance has not backup enabled!" "$RDS_ARN" "$rdsinstance" "$regx"
         else
-          textPass "$regx: RDS instance $rdsinstance has backup enabled with retention period $BACKUP_RETENTION days " "$regx"
+          textPass "$regx: RDS instance $rdsinstance has backup enabled with retention period $BACKUP_RETENTION days " "$RDS_ARN" "$rdsinstance" "$regx"
         fi
       done
     else
-      textInfo "$regx: No RDS instances found" "$regx"
+      textInfo "$regx: No RDS instances found" "" "" "$regx"
     fi
   done
 }

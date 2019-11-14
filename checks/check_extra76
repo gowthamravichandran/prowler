@@ -25,10 +25,10 @@ extra76(){
     LIST_OF_PUBLIC_AMIS=$($AWSCLI ec2 describe-images --owners self $PROFILE_OPT --region $regx --filters "Name=is-public,Values=true" --query 'Images[*].{ID:ImageId}' --output text)
     if [[ $LIST_OF_PUBLIC_AMIS ]];then
       for ami in $LIST_OF_PUBLIC_AMIS; do
-        textFail "$regx: $ami is currently Public!" "$regx"
+        textFail "$regx: $ami is currently Public!" "arn:aws:ec2:$regx::image/$ami" "$ami" "$regx"
       done
     else
-      textPass "$regx: No Public AMIs found" "$regx"
+      textPass "$regx: No Public AMIs found" "" "" "$regx"
     fi
   done
 }

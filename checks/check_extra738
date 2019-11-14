@@ -21,15 +21,16 @@ extra738(){
     if [[ $LIST_OF_DISTRIBUTIONS ]];then
       for dist in $LIST_OF_DISTRIBUTIONS; do
         CHECK_HTTPS_STATUS=$($AWSCLI cloudfront get-distribution --id $dist --query Distribution.DistributionConfig.DefaultCacheBehavior.ViewerProtocolPolicy $PROFILE_OPT --output text)
+        CLOUD_FRONT_ARN=$($AWSCLI cloudfront get-distribution $PROFILE_OPT --id "$dist" --query 'Distribution.ARN' --output text)
         if [[ $CHECK_HTTPS_STATUS == "allow-all" ]]; then
-          textFail "CloudFront distribution $dist viewers can use HTTP or HTTPS!" "$regx"
+          textFail "CloudFront distribution $dist viewers can use HTTP or HTTPS!" "$CLOUD_FRONT_ARN" "$dist" "$regx"
         elif [[ $CHECK_HTTPS_STATUS == "redirect-to-https" ]]; then
-          textPass "CloudFront distribution $dist has redirect to HTTPS" "$regx"
+          textPass "CloudFront distribution $dist has redirect to HTTPS" "$CLOUD_FRONT_ARN" "$dist" "$regx"
         else
-          textPass "CloudFront distribution $dist has HTTPS only" "$regx"
+          textPass "CloudFront distribution $dist has HTTPS only" "$CLOUD_FRONT_ARN" "$dist" "$regx"
         fi
       done
     else
-      textInfo "No CloudFront distributions found" "$regx"
+      textInfo "No CloudFront distributions found" "" "" "$regx"
     fi
 }

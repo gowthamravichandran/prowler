@@ -20,17 +20,21 @@ extra735(){
   textInfo "Looking for RDS Volumes in all regions...  "
   for regx in $REGIONS; do
     LIST_OF_RDS_INSTANCES=$($AWSCLI rds describe-db-instances $PROFILE_OPT --region $regx --query 'DBInstances[*].DBInstanceIdentifier' --output text)
+    LIST_OF_RDS_INSTANCES_ARN=$($AWSCLI rds describe-db-instances $PROFILE_OPT --region $regx --query 'DBInstances[*].DBInstanceArn' --output text)
+    LIST_OF_RDS_INSTANCES_ARN_ARR=($(echo "$LIST_OF_RDS_INSTANCES_ARN" | tr ' ' '\n'))
+    declare -i INDEX=0
     if [[ $LIST_OF_RDS_INSTANCES ]];then
       for rdsinstance in $LIST_OF_RDS_INSTANCES; do
         IS_ENCRYPTED=$($AWSCLI rds describe-db-instances $PROFILE_OPT --region $regx --db-instance-identifier $rdsinstance --query 'DBInstances[*].StorageEncrypted' --output text)
         if [[ $IS_ENCRYPTED == "False" ]]; then
-          textFail "$regx: RDS instance $rdsinstance is not encrypted!" "$regx"
+          textFail "$regx: RDS instance $rdsinstance is not encrypted!" "${LIST_OF_RDS_INSTANCES_ARN_ARR[$INDEX]}" "$rdsinstance" "$regx"
         else
-          textPass "$regx: RDS instance $rdsinstance is encrypted" "$regx"
+          textPass "$regx: RDS instance $rdsinstance is encrypted" "${LIST_OF_RDS_INSTANCES_ARN_ARR[$INDEX]}" "$rdsinstance" "$regx"
         fi
+        ((INDEX = INDEX + 1))
       done
     else
-      textInfo "$regx: No RDS instances found" "$regx"
+      textInfo "$regx: No RDS instances found" "" "" "$regx"
     fi
   done
 }

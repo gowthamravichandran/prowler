@@ -23,9 +23,9 @@ extra718(){
     for bucket in $LIST_OF_BUCKETS;do
       BUCKET_SERVER_LOG_ENABLED=$($AWSCLI s3api get-bucket-logging --bucket $bucket $PROFILE_OPT --query [LoggingEnabled] --output text|grep -v "^None$")
       if [[ $BUCKET_SERVER_LOG_ENABLED ]];then
-        textPass "Bucket $bucket has server access logging enabled"
+        textPass "Bucket $bucket has server access logging enabled" "arn:aws:s3:::$bucket" "$bucket"
       else
-        textFail "Bucket $bucket has server access logging disabled!"
+        textFail "Bucket $bucket has server access logging disabled!" "arn:aws:s3:::$bucket" "$bucket"
       fi
     done
   else

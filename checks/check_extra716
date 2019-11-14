@@ -23,22 +23,23 @@ extra716(){
     if [[ $LIST_OF_DOMAINS ]]; then
       for domain in $LIST_OF_DOMAINS;do
         CHECK_IF_MEMBER_OF_VPC=$($AWSCLI es describe-elasticsearch-domain-config --domain-name $domain $PROFILE_OPT --region $regx --query DomainConfig.VPCOptions.Options.VPCId --output text|grep -v ^None)
+        ES_ARN="arn:aws:es:$regx:$ACCOUNT_NUM:domain/$domain"
         if [[ ! $CHECK_IF_MEMBER_OF_VPC ]];then
           TEMP_POLICY_FILE=$(mktemp -t prowler-${ACCOUNT_NUM}-es-domain.policy.XXXXXXXXXX)
           $AWSCLI es describe-elasticsearch-domain-config --domain-name $domain $PROFILE_OPT --region $regx --query DomainConfig.AccessPolicies.Options --output text > $TEMP_POLICY_FILE 2> /dev/null
           # check if the policy has Principal as *
           CHECK_ES_DOMAIN_ALLUSERS_POLICY=$(cat $TEMP_POLICY_FILE | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | awk '/Principal/ && !skip { print } { skip = /Deny/} '|grep \"Principal|grep \*)
           if [[ $CHECK_ES_DOMAIN_ALLUSERS_POLICY ]];then
-            textFail "$regx: $domain policy \"may\" allow Anonymous users to perform actions (Principal: \"*\")" "$regx"
+            textFail "$regx: $domain policy \"may\" allow Anonymous users to perform actions (Principal: \"*\")" "$ES_ARN" "$domain" "$regx"
           else
-            textPass "$regx: $domain is not open" "$regx"
+            textPass "$regx: $domain is not open" "$ES_ARN" "$domain" "$regx"
           fi
         else
-          textPass "$regx: $domain is in a VPC" "$regx"
+          textPass "$regx: $domain is in a VPC" "$ES_ARN" "$domain" "$regx"
         fi
       done
     fi
-    textInfo "$regx: No Elasticsearch Service domain found" "$regx"
+    textInfo "$regx: No Elasticsearch Service domain found" "$ES_ARN" "$domain" "$regx"
     rm -fr $TEMP_POLICY_FILE
   done
 }

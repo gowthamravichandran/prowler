@@ -30,6 +30,7 @@ extra741(){
       for instance in $LIST_OF_EC2_INSTANCES; do
         EC2_USERDATA_FILE="$SECRETS_TEMP_FOLDER/extra741-$instance-userData.decoded"
         EC2_USERDATA=$($AWSCLI ec2 describe-instance-attribute --attribute userData $PROFILE_OPT --region $regx --instance-id $instance --query UserData.Value --output text| grep -v ^None | decode_report > $EC2_USERDATA_FILE)
+        INSTANCE_ARN="arn:aws:ec2:$regx:$ACCOUNT_NUM:instance/$instance"
         if [ -s $EC2_USERDATA_FILE ];then
           FILE_FORMAT_ASCII=$(file -b $EC2_USERDATA_FILE|grep ASCII)
           # This finds ftp or http URLs with credentials and common keywords
@@ -38,11 +39,11 @@ extra741(){
           if [[ $FILE_FORMAT_ASCII ]]; then
           FINDINGS=$(secretsDetector file $EC2_USERDATA_FILE)
             if [[ $FINDINGS -eq 0 ]]; then
-              textPass "$regx: No secrets found in $instance" "$regx"
+              textPass "$regx: No secrets found in $instance" "$INSTANCE_ARN" "$instance" "$regx"
               # delete file if nothing interesting is there
               rm -f $EC2_USERDATA_FILE
             else
-              textFail "$regx: Potential secret found in $instance" "$regx"
+              textFail "$regx: Potential secret found in $instance" "$INSTANCE_ARN" "$instance" "$regx"
               # delete file to not leave trace, user must look at the instance User Data
               rm -f $EC2_USERDATA_FILE
             fi
@@ -50,18 +51,18 @@ extra741(){
             mv $EC2_USERDATA_FILE $EC2_USERDATA_FILE.gz ; gunzip $EC2_USERDATA_FILE.gz
             FINDINGS=$(secretsDetector file $EC2_USERDATA_FILE)
             if [[ $FINDINGS -eq 0 ]]; then
-              textPass "$regx: No secrets found in $instance User Data" "$regx"
+              textPass "$regx: No secrets found in $instance User Data" "$INSTANCE_ARN" "$instance" "$regx"
               rm -f $EC2_USERDATA_FILE
             else
-              textFail "$regx: Potential secret found in $instance" "$regx"
+              textFail "$regx: Potential secret found in $instance" "$INSTANCE_ARN" "$instance" "$regx"
             fi
           fi
         else 
-          textPass "$regx: No secrets found in $instance User Data or it is empty" "$regx"
+          textPass "$regx: No secrets found in $instance User Data or it is empty" "$INSTANCE_ARN" "$instance" "$regx"
         fi
       done
     else
-      textInfo "$regx: No EC2 instances found" "$regx"
+      textInfo "$regx: No EC2 instances found" "" "" "$regx"
     fi
   done
   rm -rf $SECRETS_TEMP_FOLDER

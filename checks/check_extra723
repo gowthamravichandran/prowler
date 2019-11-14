@@ -21,31 +21,39 @@ extra723(){
   for regx in $REGIONS; do
     # RDS snapshots
     LIST_OF_RDS_SNAPSHOTS=$($AWSCLI rds describe-db-snapshots $PROFILE_OPT --region $regx --query DBSnapshots[*].DBSnapshotIdentifier --output text)
+    LIST_OF_RDS_ARN=$($AWSCLI rds describe-db-snapshots $PROFILE_OPT --region $regx --query DBSnapshots[*].DBSnapshotArn --output text)
+    LIST_OF_RDS_ARN_ARR=($(echo "$LIST_OF_RDS_ARN" | tr ' ' '\n'))
+    declare -i INDEX=0
     if [[ $LIST_OF_RDS_SNAPSHOTS ]]; then
       for rdssnapshot in $LIST_OF_RDS_SNAPSHOTS;do
         SNAPSHOT_IS_PUBLIC=$($AWSCLI rds describe-db-snapshot-attributes $PROFILE_OPT --region $regx --db-snapshot-identifier $rdssnapshot --query DBSnapshotAttributesResult.DBSnapshotAttributes[*] --output text|grep ^ATTRIBUTEVALUES|cut -f2|grep all)
         if [[ $SNAPSHOT_IS_PUBLIC ]];then
-          textFail "$regx: RDS Snapshot $rdssnapshot is public!" "$regx"
+          textFail "$regx: RDS Snapshot $rdssnapshot is public!" "${LIST_OF_RDS_ARN_ARR[$INDEX]}" "$rdssnapshot" "$regx"
         else
-          textPass "$regx: RDS Snapshot $rdssnapshot is not shared" "$regx"
+          textPass "$regx: RDS Snapshot $rdssnapshot is not shared" "${LIST_OF_RDS_ARN_ARR[$INDEX]}" "$rdssnapshot" "$regx"
         fi
+        ((INDEX = INDEX + 1))
       done
     else
-      textInfo "$regx: No RDS Snapshots found" "$regx"
+      textInfo "$regx: No RDS Snapshots found" "" "" "$regx"
     fi
     # RDS cluster snapshots
     LIST_OF_RDS_CLUSTER_SNAPSHOTS=$($AWSCLI rds describe-db-cluster-snapshots $PROFILE_OPT --region $regx --query DBClusterSnapshots[*].DBClusterSnapshotIdentifier --output text)
+    LIST_OF_RDS_CLUSTER_SNAPSHOTS_ARN=$($AWSCLI rds describe-db-cluster-snapshots $PROFILE_OPT --region $regx --query DBClusterSnapshots[*].DBClusterSnapshotArn --output text)
+    LIST_OF_RDS_CLUSTER_ARN_ARR=($(echo "$LIST_OF_RDS_CLUSTER_SNAPSHOTS_ARN" | tr ' ' '\n'))
+    declare -i INDEX=0
     if [[ $LIST_OF_RDS_CLUSTER_SNAPSHOTS ]]; then
       for rdsclustersnapshot in $LIST_OF_RDS_CLUSTER_SNAPSHOTS;do
         CLUSTER_SNAPSHOT_IS_PUBLIC=$($AWSCLI rds describe-db-cluster-snapshot-attributes $PROFILE_OPT --region $regx --db-cluster-snapshot-identifier $rdsclustersnapshot --query DBClusterSnapshotAttributesResult.DBClusterSnapshotAttributes[*] --output text|grep ^ATTRIBUTEVALUES|cut -f2|grep all)
         if [[ $CLUSTER_SNAPSHOT_IS_PUBLIC ]];then
-          textFail "$regx: RDS Cluster Snapshot $rdsclustersnapshot is public!" "$regx"
+          textFail "$regx: RDS Cluster Snapshot $rdsclustersnapshot is public!" "${LIST_OF_RDS_CLUSTER_ARN_ARR[$INDEX]}" "$rdsclustersnapshot" "$regx"
         else
-          textPass "$regx: RDS Cluster Snapshot $rdsclustersnapshot is not shared" "$regx"
+          textPass "$regx: RDS Cluster Snapshot $rdsclustersnapshot is not shared" "${LIST_OF_RDS_CLUSTER_ARN_ARR[$INDEX]}" "$rdsclustersnapshot" "$regx"
         fi
+        ((INDEX = INDEX + 1))
       done
     else
-      textInfo "$regx: No RDS Cluster Snapshots found" "$regx"
+      textInfo "$regx: No RDS Cluster Snapshots found" "" "" "$regx"
     fi
   done
 }

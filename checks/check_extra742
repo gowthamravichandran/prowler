@@ -26,6 +26,9 @@ extra742(){
   textInfo "Looking for secrets in CloudFormation output across all regions... "
   for regx in $REGIONS; do
     LIST_OF_CFN_STACKS=$($AWSCLI cloudformation describe-stacks $PROFILE_OPT --region $regx --query Stacks[*].[StackName] --output text)
+    LIST_OF_CFN_STACKS_ARN=$($AWSCLI cloudformation describe-stacks $PROFILE_OPT --region $regx --query Stacks[*].[StackId] --output text)
+    LIST_OF_CFN_STACKS_ARN_ARR=($(echo "$LIST_OF_CFN_STACKS_ARN" | tr ' ' '\n'))
+    declare -i INDEX=0
     if [[ $LIST_OF_CFN_STACKS ]];then
       for stack in $LIST_OF_CFN_STACKS; do
         CFN_OUTPUTS_FILE="$SECRETS_TEMP_FOLDER/extra742-$stack-$regx-outputs.txt"
@@ -36,20 +39,21 @@ extra742(){
           # New implementation using https://github.com/Yelp/detect-secrets
           FINDINGS=$(secretsDetector file $CFN_OUTPUTS_FILE)
             if [[ $FINDINGS -eq 0 ]]; then
-              textPass "$regx: No secrets found in stack $stack Outputs" "$regx"
+              textPass "$regx: No secrets found in stack $stack Outputs" "${LIST_OF_CFN_STACKS_ARN_ARR[$INDEX]}" "$stack" "$regx"
               # delete file if nothing interesting is there
               rm -f $CFN_OUTPUTS_FILE
             else
-              textFail "$regx: Potential secret found in stack $stack Outputs" "$regx"
+              textFail "$regx: Potential secret found in stack $stack Outputs" "${LIST_OF_CFN_STACKS_ARN_ARR[$INDEX]}" "$stack" "$regx"
               # delete file to not leave trace, user must look at the CFN Stack
               rm -f $CFN_OUTPUTS_FILE
             fi
         else
-          textInfo "$regx: CloudFormation stack $stack has not Outputs" "$regx"
+          textInfo "$regx: CloudFormation stack $stack has not Outputs" "${LIST_OF_CFN_STACKS_ARN_ARR[$INDEX]}" "$stack" "$regx"
         fi
+        ((INDEX = INDEX + 1))
       done
     else
-      textInfo "$regx: No CloudFormation stacks found" "$regx"
+      textInfo "$regx: No CloudFormation stacks found" "" "" "$regx"
     fi
   done
   rm -rf $SECRETS_TEMP_FOLDER

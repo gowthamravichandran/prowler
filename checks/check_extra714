@@ -22,13 +22,14 @@ extra714(){
   if [[ $LIST_OF_DISTRIBUTIONS ]]; then
     for dist in $LIST_OF_DISTRIBUTIONS; do
       LOG_ENABLED=$($AWSCLI cloudfront get-distribution $PROFILE_OPT --id "$dist" --query 'Distribution.DistributionConfig.Logging.Enabled' | grep true)
+      CLOUD_FRONT_ARN=$($AWSCLI cloudfront get-distribution $PROFILE_OPT --id "$dist" --query 'Distribution.ARN'| grep true)
       if [[ $LOG_ENABLED ]]; then
-        textPass "CloudFront distribution $dist has logging enabled"
+        textPass "CloudFront distribution $dist has logging enabled" "$CLOUD_FRONT_ARN" "$dist"
       else
-        textFail "CloudFront distribution $dist has logging disabled"
+        textFail "CloudFront distribution $dist has logging disabled" "$CLOUD_FRONT_ARN" "$dist"
       fi
     done
   else
-    textInfo "No CloudFront distributions found"
+    textInfo "No CloudFront distributions found" "" ""
   fi
 }
