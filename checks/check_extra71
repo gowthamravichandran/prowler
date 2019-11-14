@@ -43,7 +43,7 @@ extra71(){
         fi
       done
     else
-      textInfo "$grp group provides non-administrative access"
+      textInfo "$grp group provides non-administrative access" "" ""
     fi
   done
 }
