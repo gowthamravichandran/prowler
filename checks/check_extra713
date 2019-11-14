@@ -25,18 +25,19 @@ extra713(){
       if [[ $LIST_OF_GUARDDUTY_DETECTORS ]];then
         while read -r detector;do
           DETECTOR_ENABLED=$($AWSCLI guardduty get-detector --detector-id $detector $PROFILE_OPT --region $regx --query "Status" --output text|grep ENABLED)
+          ARN=arn:aws:guardduty:$regx:$ACCOUNT_NUM:detector/$detector
           if [[ $DETECTOR_ENABLED ]]; then
-            textPass "$regx: GuardDuty detector $detector enabled" "$regx"
+            textPass "$regx: GuardDuty detector $detector enabled" "$ARN" "$detector" "$regx"
           else
-            textFail "$regx: GuardDuty detector $detector configured but suspended" "$regx"
+            textFail "$regx: GuardDuty detector $detector configured but suspended" "$ARN" "$detector" "$regx"
           fi
         done <<< "$LIST_OF_GUARDDUTY_DETECTORS"
         else
-          textFail "$regx: GuardDuty detector not configured!" "$regx"
+          textFail "$regx: GuardDuty detector not configured!" "" "" "$regx"
       fi
       else 
       # if list-detectors return any error 
-      textInfo "$regx: GuardDuty not checked" "$regx"
+      textInfo "$regx: GuardDuty not checked" "" "" "$regx"
     fi 
   done
 }
