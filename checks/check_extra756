@@ -22,14 +22,16 @@ extra756(){
     if [[ $LIST_OF_RS_CLUSTERS ]];then
       for cluster in $LIST_OF_RS_CLUSTERS; do
         IS_PUBLICLY_ACCESSIBLE=$($AWSCLI $PROFILE_OPT --region $regx redshift describe-clusters --cluster-identifier $cluster --query Clusters[*].PubliclyAccessible --output text|grep True)
+        ACCOUNT_ID=$($AWSCLI sts $PROFILE_OPT get-caller-identity --region "$REGION" --query Account --output text)
+        ARN=arn:$aws:redshift:$regx:$ACCOUNT_ID:cluster:$cluster
         if [[ $IS_PUBLICLY_ACCESSIBLE ]]; then 
-           textFail "$regx: Redshift cluster $cluster is publicly accessible" "$regx"
+           textFail "$regx: Redshift cluster $cluster is publicly accessible" "$ARN" "$cluster" "$regx"
         else
-           textPass "$regx: Redshift cluster $cluster is not publicly accessible" "$regx"
+           textPass "$regx: Redshift cluster $cluster is not publicly accessible" "$ARN" "$cluster" "$regx"
         fi
       done
     else
-      textInfo "$regx: Redshift clusters found" "$regx"
+      textInfo "$regx:No Redshift clusters found" "" "" "$regx"
     fi
   done
 }

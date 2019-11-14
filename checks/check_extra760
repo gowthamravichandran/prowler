@@ -37,12 +37,13 @@ extra760(){
         curl -s $LAMBDA_CODE_LOCATION -o $LAMBDA_FUNCTION_FOLDER/$LAMBDA_FUNCTION_FILE
         unzip -qq $LAMBDA_FUNCTION_FOLDER/$LAMBDA_FUNCTION_FILE -d $LAMBDA_FUNCTION_FOLDER
         FINDINGS=$(secretsDetector folder $LAMBDA_FUNCTION_FOLDER)
+        FUNCTION_ARN=$($AWSCLI lambda $PROFILE_OPT --region $regx get-function --function-name $lambdafunction --query "Configuration.FunctionArn" --output text)
           if [[ $FINDINGS -eq 0 ]]; then
-            textPass "$regx: No secrets found in Lambda function $lambdafunction code" "$regx"
+            textPass "$regx: No secrets found in Lambda function $lambdafunction code" "$FUNCTION_ARN" "$lambdafunction" "$regx"
             # delete files if nothing interesting is there
             rm -fr $LAMBDA_FUNCTION_FOLDER
           else
-            textFail "$regx: Potential secret found in Lambda function $lambdafunction code" "$regx"
+            textFail "$regx: Potential secret found in Lambda function $lambdafunction code" "$FUNCTION_ARN" "$lambdafunction" "$regx"
             # delete files to not leave trace, user must look at the function
             rm -fr $LAMBDA_FUNCTION_FOLDER
           fi

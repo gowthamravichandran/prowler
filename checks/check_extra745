@@ -23,16 +23,17 @@ extra745(){
       for api in $LIST_OF_REST_APIS; do
         API_GW_NAME=$($AWSCLI apigateway get-rest-apis $PROFILE_OPT --region $regx --query "items[?id==\`$api\`].name" --output text)
         ENDPOINT_CONFIG_TYPE=$($AWSCLI $PROFILE_OPT --region $regx apigateway get-rest-api --rest-api-id $api --query endpointConfiguration.types --output text)
+        ARN=arn:aws:apigateway:$regx::/restapis/$api
         if [[ $ENDPOINT_CONFIG_TYPE ]]; then 
           case $ENDPOINT_CONFIG_TYPE in
             PRIVATE )
-              textPass "$regx: API Gateway $API_GW_NAME ID $api is set as $ENDPOINT_CONFIG_TYPE" "$regx"
+              textPass "$regx: API Gateway $API_GW_NAME ID $api is set as $ENDPOINT_CONFIG_TYPE" "$ARN" "$api" "$regx"
             ;;
             REGIONAL )
-              textFail "$regx: API Gateway $API_GW_NAME ID $api is internet accesible as $ENDPOINT_CONFIG_TYPE" "$regx"
+              textFail "$regx: API Gateway $API_GW_NAME ID $api is internet accesible as $ENDPOINT_CONFIG_TYPE" "$ARN" "$api" "$regx"
             ;;
             EDGE )
-              textFail "$regx: API Gateway $API_GW_NAME ID $api is internet accesible as $ENDPOINT_CONFIG_TYPE" "$regx"
+              textFail "$regx: API Gateway $API_GW_NAME ID $api is internet accesible as $ENDPOINT_CONFIG_TYPE" "$ARN" "$api" "$regx"
           esac
         fi
       done

@@ -27,18 +27,20 @@ extra722(){
         if [[ $CHECK_STAGES_NAME ]];then
           for stagname in $CHECK_STAGES_NAME;do
             CHECK_STAGE_METHOD_LOGGING=$($AWSCLI apigateway get-stages $PROFILE_OPT --region $regx --rest-api-id $apigwid --query "item[?stageName == \`$stagname\` ].methodSettings" --output text |awk '{ print $6 }' |egrep 'ERROR|INFO')
+            ARN=arn:aws:apigateway:$regx::/restapis/$apigwid
             if [[ $CHECK_STAGE_METHOD_LOGGING ]];then
-              textPass "$regx: API Gateway $API_GW_NAME ID $apigwid in $stagname has logging enabled as $CHECK_STAGE_METHOD_LOGGING" "$regx"
+              textPass "$regx: API Gateway $API_GW_NAME ID $apigwid in $stagname has logging enabled as $CHECK_STAGE_METHOD_LOGGING" "$ARN" "$apigwid" "$regx"
             else
-              textFail "$regx: API Gateway $API_GW_NAME ID $apigwid in $stagname has logging disabled" "$regx"
+              textFail "$regx: API Gateway $API_GW_NAME ID $apigwid in $stagname has logging disabled" "$ARN" "$apigwid" "$regx"
             fi
           done
         else
-           textFail "$regx: No Stage name found for $API_GW_NAME" "$regx"
+          ARN=arn:aws:apigateway:$regx::/restapis/$apigwid
+          textFail "$regx: No Stage name found for $API_GW_NAME"  "$ARN" "$apigwid" "$regx"
         fi
       done
     else
-       textInfo "$regx: No API Gateway found" "$regx"
+       textInfo "$regx: No API Gateway found" "" "" "$regx"
     fi
   done
 }

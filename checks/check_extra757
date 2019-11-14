@@ -28,13 +28,14 @@ extra757(){
         do
           EC2_ID=$(echo "$ec2_instace" | awk '{print $1}')
           LAUNCH_DATE=$(echo "$ec2_instace" | awk '{print $2}')
-          textFail "$regx: EC2 Instance $EC2_ID running before than $OLDAGE" "$regx"
+          ACCOUNT_ID=$($AWSCLI sts $PROFILE_OPT get-caller-identity --region "$REGION" --query Account --output text)
+          textFail "$regx: EC2 Instance $EC2_ID running before than $OLDAGE" "arn:arn:ec2:$regx:$ACCOUNT_ID:instance/$EC2_ID" "$EC2_ID" "$regx"
         done <<< "$INSTACES_OLD_THAN_AGE"
       else
-        textPass "$regx: All Instances newer than 6 months" "$regx"
+        textPass "$regx: All Instances newer than 6 months" "" "" "$regx"
       fi
     else
-      textInfo "$regx: No EC2 Instances Found" "$regx"
+      textInfo "$regx: No EC2 Instances Found" "" "" "$regx"
     fi
   done
 }
