@@ -26,7 +26,7 @@ extra720(){
         if [[ $LIST_OF_TRAILS ]]; then
           for trail in $LIST_OF_TRAILS; do
             FUNCTION_ENABLED_IN_TRAIL=$($AWSCLI cloudtrail get-event-selectors $PROFILE_OPT --trail-name $trail --region $regx --query "EventSelectors[*].DataResources[?Type == \`AWS::Lambda::Function\`].Values" --output text |xargs -n1| grep -E "^arn:aws:lambda.*function:$lambdafunction$|^arn:aws:lambda$")
-            TRAIL_ARN=$($AWSCLI cloudtrail get-event-selectors $PROFILE_OPT --trail-name $trail --region $regx --query "TrailARN")
+            TRAIL_ARN=$($AWSCLI cloudtrail get-event-selectors $PROFILE_OPT --trail-name $trail --region $regx --query "TrailARN" --output text)
             if [[ $FUNCTION_ENABLED_IN_TRAIL ]]; then
               textPass "$regx: Lambda function $lambdafunction enabled in trail $trail" "$TRAIL_ARN" "$trail" "$regx"
             else

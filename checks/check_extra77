@@ -36,8 +36,8 @@ extra77(){
       else
         textPass "$regx: $ecr_repo is not open" "${LIST_OF_ECR_ARN_ARR[$INDEX]}" "$ecr_repo" "$regx"
       fi
+      ((INDEX = INDEX + 1))
     done
     rm -fr $TEMP_POLICY_FILE
-    ((INDEX = INDEX + 1))
   done
 }
