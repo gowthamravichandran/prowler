@@ -35,14 +35,15 @@ extra71(){
         # users
         # check for user MFA device in credential report
         USER_MFA_ENABLED=$( cat $TEMP_REPORT_FILE | grep "^$auser," | cut -d',' -f8)
+        USER_ARN=$($AWSCLI $PROFILE_OPT iam get-user --user-name $auser --output text  --query "User.Arn")
         if [[ "true" == $USER_MFA_ENABLED ]]; then
-          textPass "$auser / MFA Enabled / admin via group $grp"
+          textPass "$auser / MFA Enabled / admin via group $grp" "$USER_ARN" "$auser"
         else
-          textFail "$auser / MFA DISABLED / admin via group $grp"
+          textFail "$auser / MFA DISABLED / admin via group $grp" "$USER_ARN" "$auser"
         fi
       done
     else
-      textInfo "$grp group provides non-administrative access"
+      textInfo "$grp group provides non-administrative access" "" ""
     fi
   done
 }

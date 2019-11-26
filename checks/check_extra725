@@ -26,7 +26,7 @@ extra725(){
   TEMP_BUCKET_LIST_FILE=$(mktemp -t prowler.bucket-list-XXXXXX)
   $AWSCLI s3api list-buckets --query 'Buckets[*].{Name:Name}' $PROFILE_OPT --region $REGION --output text > $TEMP_BUCKET_LIST_FILE
   if [ ! -s $TEMP_BUCKET_LIST_FILE ]; then
-    textInfo "$regx: No S3 buckets found" "$regx"
+    textInfo "$regx: No S3 buckets found" "" "" "$regx"
     exit
   fi
 
@@ -45,7 +45,7 @@ extra725(){
     echo $BUCKETS_OBJECT_LOGGING_ENABLED |tr " " "\n"|sort >> $TEMP_BUCKETS_LOGGING_LIST_FILE
     if [[ $BUCKETS_OBJECT_LOGGING_ENABLED ]]; then
       for bucket in $BUCKETS_OBJECT_LOGGING_ENABLED; do
-        textPass "$regx: S3 bucket $bucket has Object-level logging enabled in trail $trail" "$regx"
+        textPass "$regx: S3 bucket $bucket has Object-level logging enabled in trail $trail" "arn:aws:s3:::$bucket" "$bucket" "$regx"
       done
     fi
   done < $TEMP_TRAILS_LIST_FILE
@@ -54,7 +54,7 @@ extra725(){
   BUCKETS_NOT_LOGGING=$(diff $TEMP_BUCKETS_LOGGING_LIST_FILE $TEMP_BUCKET_LIST_FILE | sed -n 's/^> //p')
   if [[ $BUCKETS_NOT_LOGGING ]]; then
     for bucket in $BUCKETS_NOT_LOGGING; do
-      textFail "$regx: S3 bucket $bucket has Object-level logging disabled" "$regx"
+      textFail "$regx: S3 bucket $bucket has Object-level logging disabled" "arn:aws:s3:::$bucket" "$bucket" "$regx"
    done
   fi
   # delete all temp files

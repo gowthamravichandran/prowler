@@ -23,16 +23,20 @@ extra77(){
   textInfo "Looking for ECR repos in all regions...  "
   for regx in $REGIONS; do
     LIST_OF_ECR_REPOS=$($AWSCLI ecr describe-repositories $PROFILE_OPT --region $regx --query 'repositories[*].{Name:repositoryName}' --output text)
+    LIST_OF_ECR_ARN=$($AWSCLI ecr describe-repositories $PROFILE_OPT --region $regx --query 'repositories[*].{Arn:repositoryArn}' --output text)
+    LIST_OF_ECR_ARN_ARR=($(echo "$LIST_OF_ECR_ARN" | tr ' ' '\n'))
+    declare -i INDEX=0
     for ecr_repo in $LIST_OF_ECR_REPOS; do
       TEMP_POLICY_FILE=$(mktemp -t prowler-${ACCOUNT_NUM}-ecr-repo.policy.XXXXXXXXXX)
       $AWSCLI ecr get-repository-policy --repository-name $ecr_repo $PROFILE_OPT --region $regx --output text > $TEMP_POLICY_FILE 2> /dev/null
       # check if the policy has Principal as *
       CHECK_ECR_REPO_ALLUSERS_POLICY=$(cat $TEMP_POLICY_FILE | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | awk '/Principal/ && !skip { print } { skip = /Deny/} '|grep \"Principal|grep \*)
       if [[ $CHECK_ECR_REPO_ALLUSERS_POLICY ]];then
-        textFail "$regx: $ecr_repo policy \"may\" allow Anonymous users to perform actions (Principal: \"*\")" "$regx"
+        textFail "$regx: $ecr_repo policy \"may\" allow Anonymous users to perform actions (Principal: \"*\")" "${LIST_OF_ECR_ARN_ARR[$INDEX]}" "$ecr_repo" "$regx"
       else
-        textPass "$regx: $ecr_repo is not open" "$regx"
+        textPass "$regx: $ecr_repo is not open" "${LIST_OF_ECR_ARN_ARR[$INDEX]}" "$ecr_repo" "$regx"
       fi
+      ((INDEX = INDEX + 1))
     done
     rm -fr $TEMP_POLICY_FILE
   done

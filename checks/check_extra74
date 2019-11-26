@@ -25,10 +25,11 @@ extra74(){
     LIST_OF_SECURITYGROUPS=$($AWSCLI ec2 describe-security-groups $PROFILE_OPT --region $regx --filters "Name=ip-permission.cidr,Values=0.0.0.0/0" --query "SecurityGroups[].[GroupId]" --output text --max-items $MAXITEMS)
     for SG_ID in $LIST_OF_SECURITYGROUPS; do
       SG_NO_INGRESS_FILTER=$($AWSCLI ec2 describe-network-interfaces $PROFILE_OPT --region $regx --filters "Name=group-id,Values=$SG_ID" --query "length(NetworkInterfaces)" --output text)
+      SG_ARN=arn:aws:ec2:$regx:$ACCOUNT_NUM:security-group/$SG_ID
       if [[ $SG_NO_INGRESS_FILTER -ne 0 ]];then
-        textFail "$regx: $SG_ID has no ingress filtering and it is being used!" "$regx"
+        textFail "$regx: $SG_ID has no ingress filtering and it is being used!" "$SG_ARN" "$SG_ID" "$regx"
       else
-        textInfo "$regx: $SG_ID has no ingress filtering but it is not being used" "$regx"
+        textInfo "$regx: $SG_ID has no ingress filtering but it is not being used" "$SG_ARN" "$SG_ID" "$regx"
       fi
     done
   done

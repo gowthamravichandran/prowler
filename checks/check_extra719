@@ -22,13 +22,14 @@ extra719(){
   if [[ $LIST_OF_HOSTED_ZONES ]]; then
     for hostedzoneid in $LIST_OF_HOSTED_ZONES;do
       HOSTED_ZONE_QUERY_LOG_ENABLED=$($AWSCLI route53 list-query-logging-configs --hosted-zone-id $hostedzoneid $PROFILE_OPT --query QueryLoggingConfigs[*].CloudWatchLogsLogGroupArn --output text|cut -d: -f7)
+      ROUTE53_ARN="arn:aws:route53:::queryloggingconfig/$hostedzoneid"
       if [[ $HOSTED_ZONE_QUERY_LOG_ENABLED ]];then
-        textPass "Route53 hosted zone Id $hostedzoneid has query logging enabled in Log Group $HOSTED_ZONE_QUERY_LOG_ENABLED"
+        textPass "Route53 hosted zone Id $hostedzoneid has query logging enabled in Log Group $HOSTED_ZONE_QUERY_LOG_ENABLED" "$ROUTE53_ARN" "$hostedzoneid"
       else
-        textFail "Route53 hosted zone Id $hostedzoneid has query logging disabled!"
+        textFail "Route53 hosted zone Id $hostedzoneid has query logging disabled!" "$ROUTE53_ARN" "$hostedzoneid"
       fi
     done
   else
-    textInfo "No Route53 hosted zones found"
+    textInfo "No Route53 hosted zones found" "" ""
   fi
 }

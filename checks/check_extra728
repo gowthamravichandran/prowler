@@ -24,14 +24,15 @@ extra728(){
       for queue in $LIST_SQS; do
         # check if the policy has KmsMasterKeyId therefore SSE enabled
         SSE_ENABLED_QUEUE=$($AWSCLI sqs get-queue-attributes --queue-url $queue $PROFILE_OPT --region $regx --attribute-names All --query Attributes.KmsMasterKeyId --output text|grep -v ^None)
+        SSE_QUEUE_ARN=$($AWSCLI sqs get-queue-attributes --queue-url $queue $PROFILE_OPT --region $regx --attribute-names All --query Attributes.QueueArn --output text|grep -v ^None)
         if [[ $SSE_ENABLED_QUEUE ]]; then
-          textPass "$regx: SQS queue $queue is using Server Side Encryption" "$regx"
+          textPass "$regx: SQS queue $queue is using Server Side Encryption" "$SSE_QUEUE_ARN" "$queue" "$regx"
         else
-          textFail "$regx: SQS queue $queue is not using Server Side Encryption" "$regx"
+          textFail "$regx: SQS queue $queue is not using Server Side Encryption" "$SSE_QUEUE_ARN" "$queue" "$regx"
         fi
       done
     else
-      textInfo "$regx: No SQS queues found" "$regx"
+      textInfo "$regx: No SQS queues found" "" "" "$regx"
     fi
   done
 }

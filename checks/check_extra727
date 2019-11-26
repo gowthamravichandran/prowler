@@ -23,6 +23,7 @@ extra727(){
     if [[ $LIST_SQS ]]; then
       for queue in $LIST_SQS; do
         SQS_POLICY=$($AWSCLI sqs get-queue-attributes --queue-url $queue $PROFILE_OPT --region $regx --attribute-names All --query Attributes.Policy)
+        SQS_POLICY_ARN=$($AWSCLI sqs get-queue-attributes --queue-url $queue $PROFILE_OPT --region $regx --attribute-names All --query Attributes.QueueArn)
         if [[ "$SQS_POLICY" != "null" ]]; then
           SQS_POLICY_ALLOW_ALL=$(echo $SQS_POLICY \
             | jq '. | fromjson' | jq '.Statement[] | select(.Effect=="Allow") | select(.Principal=="*" or .Principal.AWS=="*" or .Principal.CanonicalUser=="*")')
@@ -32,19 +33,19 @@ extra727(){
             if [[ $SQS_POLICY_ALLOW_ALL_WITHOUT_CONDITION ]]; then
               SQS_POLICY_ALLOW_ALL_WITHOUT_CONDITION_DETAILS=$(echo $SQS_POLICY_ALLOW_ALL_WITHOUT_CONDITION \
                 | jq '"[Principal: " + (.Principal|tostring) + " Action: " + (.Action|tostring) + "]"' )
-              textFail "$regx: SQS $queue queue policy with public access: $SQS_POLICY_ALLOW_ALL_WITHOUT_CONDITION_DETAILS" "$regx"
+              textFail "$regx: SQS $queue queue policy with public access: $SQS_POLICY_ALLOW_ALL_WITHOUT_CONDITION_DETAILS" "$SQS_POLICY_ARN" "$queue" "$regx"
             else
-              textInfo "$regx: SQS $queue queue policy with public access but has a Condition" "$regx"
+              textInfo "$regx: SQS $queue queue policy with public access but has a Condition" "$SQS_POLICY_ARN" "$queue" "$regx"
             fi
           else
-            textPass "$regx: SQS $queue queue without public access" "$regx"
+            textPass "$regx: SQS $queue queue without public access" "$SQS_POLICY_ARN" "$queue" "$regx"
           fi
         else
-          textPass "$regx: SQS $queue queue without policy" "$regx"
+          textPass "$regx: SQS $queue queue without policy" "$SQS_POLICY_ARN" "$queue" "$regx"
         fi
       done
     else
-      textInfo "$regx: No SQS queues found" "$regx"
+      textInfo "$regx: No SQS queues found" "" "" "$regx"
     fi
   done
 }

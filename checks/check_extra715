@@ -22,20 +22,21 @@ extra715(){
     if [[ $LIST_OF_DOMAINS ]]; then
       for domain in $LIST_OF_DOMAINS;do
         SEARCH_SLOWLOG_ENABLED=$($AWSCLI es describe-elasticsearch-domain-config --domain-name $domain $PROFILE_OPT --region $regx --query DomainConfig.LogPublishingOptions.Options.SEARCH_SLOW_LOGS.Enabled --output text |grep -v ^None|grep -v ^False)
+        ES_ARN="arn:aws:es:$regx:$ACCOUNT_NUM:domain/$domain"
         if [[ $SEARCH_SLOWLOG_ENABLED ]];then
-          textPass "$regx: ElasticSearch Service domain $domain SEARCH_SLOW_LOGS enabled" "$regx"
+          textPass "$regx: ElasticSearch Service domain $domain SEARCH_SLOW_LOGS enabled" "$ES_ARN" "$domain" "$regx"
         else
-          textFail "$regx: ElasticSearch Service domain $domain SEARCH_SLOW_LOGS disabled!" "$regx"
+          textFail "$regx: ElasticSearch Service domain $domain SEARCH_SLOW_LOGS disabled!" "$ES_ARN" "$domain" "$regx"
         fi
         INDEX_SLOWLOG_ENABLED=$($AWSCLI es describe-elasticsearch-domain-config --domain-name $domain $PROFILE_OPT --region $regx --query DomainConfig.LogPublishingOptions.Options.INDEX_SLOW_LOGS.Enabled --output text |grep -v ^None|grep -v ^False)
         if [[ $INDEX_SLOWLOG_ENABLED ]];then
-          textPass "$regx: ElasticSearch Service domain $domain INDEX_SLOW_LOGS enabled" "$regx"
+          textPass "$regx: ElasticSearch Service domain $domain INDEX_SLOW_LOGS enabled" "$ES_ARN" "$domain" "$regx"
         else
-          textFail "$regx: ElasticSearch Service domain $domain INDEX_SLOW_LOGS disabled!" "$regx"
+          textFail "$regx: ElasticSearch Service domain $domain INDEX_SLOW_LOGS disabled!" "$ES_ARN" "$domain" "$regx"
         fi
       done
     else
-      textInfo "$regx: No Elasticsearch Service domain found" "$regx"
+      textInfo "$regx: No Elasticsearch Service domain found" "" "" "$regx"
     fi
   done
 }

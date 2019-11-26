@@ -19,16 +19,20 @@ CHECK_ALTERNATE_check732="extra732"
 
 extra732(){
   LIST_DISTRIBUTIONS=$($AWSCLI cloudfront list-distributions $PROFILE_OPT --query 'DistributionList.Items[*].Id' --output text |grep -v ^None)
+  LIST_DISTRIBUTIONS_ARN=$($AWSCLI cloudfront list-distributions $PROFILE_OPT --query 'DistributionList.Items[*].ARN' --output text |grep -v ^None)
+  LIST_OF_CLOUDFRONT_ARN_ARR=($(echo "$LIST_DISTRIBUTIONS_ARN" | tr ' ' '\n'))
+  declare -i INDEX=0
   if [[ $LIST_DISTRIBUTIONS ]]; then
     for dist in $LIST_DISTRIBUTIONS; do
       GEO_ENABLED=$($AWSCLI cloudfront get-distribution-config $PROFILE_OPT --id $dist --query DistributionConfig.Restrictions.GeoRestriction.RestrictionType --output text)
       if [[ $GEO_ENABLED == "none" ]]; then
-        textFail "CloudFront distribution $dist has not Geo restrictions"
+        textFail "CloudFront distribution $dist has not Geo restrictions" "${LIST_OF_CLOUDFRONT_ARN_ARR[$INDEX]}" "$dist"
       else
-        textPass "CloudFront distribution $dist has Geo restrictions enabled"
+        textPass "CloudFront distribution $dist has Geo restrictions enabled" "${LIST_OF_CLOUDFRONT_ARN_ARR[$INDEX]}" "$dist"
       fi
+      ((INDEX = INDEX + 1))
     done
   else
-    textInfo "No CloudFront distributions found"
+    textInfo "No CloudFront distributions found" "" ""
   fi
 }

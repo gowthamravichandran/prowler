@@ -23,9 +23,9 @@ extra734(){
       # query to get if has encryption enabled or not
       RESULT=$($AWSCLI s3api get-bucket-encryption $PROFILE_OPT --bucket $bucket --query ServerSideEncryptionConfiguration.Rules[].ApplyServerSideEncryptionByDefault[].SSEAlgorithm --output text 2>&1)
       if [[ $(echo "$RESULT" | grep ServerSideEncryptionConfigurationNotFoundError) ]] ; then
-          textFail "Bucket $bucket does not enforce encryption!"
+          textFail "Bucket $bucket does not enforce encryption!" "arn:aws:s3:::$bucket" "$bucket"
       elif [[ $(echo "$RESULT" | grep AccessDenied) ]] ; then
-        textFail "Access Denied Trying to Get Encryption for $bucket"
+        textFail "Access Denied Trying to Get Encryption for $bucket" "arn:aws:s3:::$bucket" "$bucket"
       else
         TEMP_SSE_POLICY_FILE=$(mktemp -t prowler-${ACCOUNT_NUM}-${bucket}.policy.XXXXXXXXXX)
         # get bucket policy
@@ -36,11 +36,11 @@ extra734(){
 
         echo "$RESULT" | while read RBUCKET SSEALG; do
           if [[ $SSEALG ]]; then
-            textPass "Bucket $RBUCKET has default encryption enabled with algorithm $SSEALG"
+            textPass "Bucket $RBUCKET has default encryption enabled with algorithm $SSEALG" "arn:aws:s3:::$RBUCKET" "$RBUCKET"
           fi
         done
         if [[ $CHECK_BUCKET_SSE_POLICY_PRESENT && $CHECK_BUCKET_SSE_POLICY_VALUE ]]; then
-          textPass "Bucket $bucket has S3 bucket policy to enforce encryption with $CHECK_BUCKET_SSE_POLICY_VALUE"
+          textPass "Bucket $bucket has S3 bucket policy to enforce encryption with $CHECK_BUCKET_SSE_POLICY_VALUE" "arn:aws:s3:::$bucket" "$bucket"
         fi
 
         rm -fr $TEMP_SSE_POLICY_FILE
@@ -48,6 +48,6 @@ extra734(){
     done
 
   else
-    textInfo "No S3 Buckets found"
+    textInfo "No S3 Buckets found" "" ""
   fi
 }
