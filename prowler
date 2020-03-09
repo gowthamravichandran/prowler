@@ -159,7 +159,7 @@ done
 . $PROWLER_DIR/include/awscli_detector
 . $PROWLER_DIR/include/outputs
 . $PROWLER_DIR/include/csv_header
-. $PROWLER_DIR/include/banner
+# . $PROWLER_DIR/include/banner
 . $PROWLER_DIR/include/whoami
 . $PROWLER_DIR/include/credentials_report
 . $PROWLER_DIR/include/scoring
@@ -343,9 +343,9 @@ get_all_checks_without_exclusion() {
 }
 
 ### All functions defined above ... run the workflow
-if [[ $MODE != "csv" ]]; then
-  prowlerBanner
-fi
+# if [[ $MODE != "csv" ]]; then
+#   prowlerBanner
+# fi
 
 # List only check tittles
 if [[ $PRINTCHECKSONLY == "1" ]]; then
