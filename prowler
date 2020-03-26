@@ -80,7 +80,7 @@ USAGE:
   exit
 }
 
-while getopts ":hlLkp:r:c:g:f:m:M:E:enbVs" OPTION; do
+while getopts ":hlLkp:r:c:g:f:m:M:E:enbVs:R:" OPTION; do
    case $OPTION in
      h )
         usage
@@ -210,7 +210,7 @@ show_group_title() {
 # Function to execute the check
 execute_check() {
 
-    # temporary file where to store credentials
+  # temporary file where to store credentials
   TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
 
   # assume role command
@@ -223,7 +223,7 @@ execute_check() {
   export AWS_SECRET_ACCESS_KEY=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.SecretAccessKey')
   export AWS_SESSION_TOKEN=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.SessionToken')
   rm -fr $TEMP_STS_ASSUMED_FILE
-    
+
 	# See if this is an alternate name for a check
 	# for example, we might have been passed 1.01 which is another name for 1.1
   local alternate_name_var=CHECK_ALTERNATE_$1
