@@ -175,7 +175,7 @@ done
 CURRENTTIME=$(date +%Y-%m-%dT-%H:%M:%SZ)
 EXPIRYTIME=0
 
-if [[ $EXPIRYTIME < $CURRENTTIME ]];then
+if [[ "$EXPIRYTIME" < "$CURRENTTIME" ]];then
   echo "assuming role"
   # temporary file where to store credentials
   TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
@@ -192,7 +192,6 @@ if [[ $EXPIRYTIME < $CURRENTTIME ]];then
   export EXPIRYTIME=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.Expiration')
   rm -fr $TEMP_STS_ASSUMED_FILE
 fi
-
 
 # Get a list of all available AWS Regions
 REGIONS=$($AWSCLI ec2 describe-regions --query 'Regions[].RegionName' \
@@ -233,10 +232,11 @@ show_group_title() {
 # Function to execute the check
 execute_check() {
   
-  CURRENTTIME=$(date +%Y-%m-%dT-%H:%M:%SZ)
-  EXPIRYTIME=0
+  CURRENTTIME=$(date +%Y-%m-%dT%H:%M:%SZ)
 
-  if [[ $EXPIRYTIME > $CURRENTTIME ]];then
+  echo "$EXPIRYTIME < $CURRENTTIME"
+
+  if [[ "$EXPIRYTIME" < "$CURRENTTIME" ]];then
     echo "assuming role inside check"
     # temporary file where to store credentials
     TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
