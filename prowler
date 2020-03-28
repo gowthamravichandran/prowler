@@ -231,12 +231,18 @@ show_group_title() {
 
 # Function to execute the check
 execute_check() {
-  
-  CURRENTTIME=$(date +%Y-%m-%dT%H:%M:%SZ)
+  # reassuming 10 mins earlier to avoid a check getting in last min and not having enough time to run 
+  CURRENTTIME=$(date -v +10M +%Y-%m-%dT%H:%M:%SZ)
 
   echo "$EXPIRYTIME < $CURRENTTIME"
 
   if [[ "$EXPIRYTIME" < "$CURRENTTIME" ]];then
+    
+    unset AWS_ACCESS_KEY_ID
+    unset AWS_SECRET_ACCESS_KEY
+    unset AWS_SESSION_TOKEN
+    unset EXPIRYTIME
+
     echo "assuming role inside check"
     # temporary file where to store credentials
     TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
