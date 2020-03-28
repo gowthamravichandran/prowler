@@ -232,7 +232,7 @@ show_group_title() {
 # Function to execute the check
 execute_check() {
   # reassuming 10 mins earlier to avoid a check getting in last min and not having enough time to run 
-  CURRENTTIME=$(date -v +10M +%Y-%m-%dT%H:%M:%SZ)
+  CURRENTTIME=$(date -d@"$(( `date +%s`+600))" +%Y-%m-%dT%H:%M:%SZ)
 
   echo "$EXPIRYTIME < $CURRENTTIME"
 
