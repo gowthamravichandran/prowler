@@ -176,7 +176,6 @@ CURRENTTIME=$(date +%Y-%m-%dT-%H:%M:%SZ)
 EXPIRYTIME=0
 
 if [[ "$EXPIRYTIME" < "$CURRENTTIME" ]];then
-  echo "assuming role"
   # temporary file where to store credentials
   TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
 
@@ -234,8 +233,6 @@ execute_check() {
   # reassuming 10 mins earlier to avoid a check getting in last min and not having enough time to run 
   CURRENTTIME=$(date -d@"$(( `date +%s`+600))" +%Y-%m-%dT%H:%M:%SZ)
 
-  echo "$EXPIRYTIME < $CURRENTTIME"
-
   if [[ "$EXPIRYTIME" < "$CURRENTTIME" ]];then
     
     unset AWS_ACCESS_KEY_ID
@@ -243,10 +240,8 @@ execute_check() {
     unset AWS_SESSION_TOKEN
     unset EXPIRYTIME
 
-    echo "assuming role inside check"
     # temporary file where to store credentials
     TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
-
     # assume role command
     $AWSCLI sts assume-role --role-arn $ROLE \
       --role-session-name ProwlerAssessmentSession \
@@ -458,9 +453,6 @@ if [[ $CHECK_ID ]];then
   cleanTemp
   exit $EXITCODE
 fi
-
-echo "printing identity"
-aws sts get-caller-identity --output json
 
 # The profile shouldn't be used for CLI
 PROFILE=""
