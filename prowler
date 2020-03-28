@@ -171,6 +171,29 @@ done
 . $PROWLER_DIR/include/secrets_detector
 . $PROWLER_DIR/include/check3x
 
+
+CURRENTTIME=$(date +%Y-%m-%dT-%H:%M:%SZ)
+EXPIRYTIME=0
+
+if [[ $EXPIRYTIME < $CURRENTTIME ]];then
+  echo "assuming role"
+  # temporary file where to store credentials
+  TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
+
+  # assume role command
+  $AWSCLI sts assume-role --role-arn $ROLE \
+    --role-session-name ProwlerAssessmentSession \
+    --duration-seconds 3600 > $TEMP_STS_ASSUMED_FILE
+
+  # set env variables with assumed role credentials
+  export AWS_ACCESS_KEY_ID=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.AccessKeyId')
+  export AWS_SECRET_ACCESS_KEY=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.SecretAccessKey')
+  export AWS_SESSION_TOKEN=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.SessionToken')
+  export EXPIRYTIME=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.Expiration')
+  rm -fr $TEMP_STS_ASSUMED_FILE
+fi
+
+
 # Get a list of all available AWS Regions
 REGIONS=$($AWSCLI ec2 describe-regions --query 'Regions[].RegionName' \
   --output text \
@@ -209,20 +232,27 @@ show_group_title() {
 
 # Function to execute the check
 execute_check() {
+  
+  CURRENTTIME=$(date +%Y-%m-%dT-%H:%M:%SZ)
+  EXPIRYTIME=0
 
-  # temporary file where to store credentials
-  TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
+  if [[ $EXPIRYTIME > $CURRENTTIME ]];then
+    echo "assuming role inside check"
+    # temporary file where to store credentials
+    TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
 
-  # assume role command
-  $AWSCLI sts assume-role --role-arn $ROLE \
-    --role-session-name ProwlerAssessmentSession \
-    --duration-seconds 3600 > $TEMP_STS_ASSUMED_FILE
+    # assume role command
+    $AWSCLI sts assume-role --role-arn $ROLE \
+      --role-session-name ProwlerAssessmentSession \
+      --duration-seconds 3600 > $TEMP_STS_ASSUMED_FILE
 
-  # set env variables with assumed role credentials
-  export AWS_ACCESS_KEY_ID=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.AccessKeyId')
-  export AWS_SECRET_ACCESS_KEY=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.SecretAccessKey')
-  export AWS_SESSION_TOKEN=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.SessionToken')
-  rm -fr $TEMP_STS_ASSUMED_FILE
+    # set env variables with assumed role credentials
+    export AWS_ACCESS_KEY_ID=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.AccessKeyId')
+    export AWS_SECRET_ACCESS_KEY=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.SecretAccessKey')
+    export AWS_SESSION_TOKEN=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.SessionToken')
+    export EXPIRYTIME=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.Expiration')
+    rm -fr $TEMP_STS_ASSUMED_FILE
+  fi
 
 	# See if this is an alternate name for a check
 	# for example, we might have been passed 1.01 which is another name for 1.1
@@ -423,9 +453,13 @@ if [[ $CHECK_ID ]];then
   exit $EXITCODE
 fi
 
+echo "printing identity"
+aws sts get-caller-identity --output json
+
 # The profile shouldn't be used for CLI
 PROFILE=""
 PROFILE_OPT=""
+
 execute_all
 scoring
 cleanTemp
