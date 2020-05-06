@@ -5,9 +5,16 @@ try_assume_role(){
   # temporary file where to store credentials
   TEMP_STS_ASSUMED_FILE=$(mktemp -t prowler.sts_assumed-XXXXXX)
   # assume role command
-  $AWSCLI sts assume-role --role-arn $ROLE \
-    --role-session-name ProwlerAssessmentSession \
-    --duration-seconds 3600 > $TEMP_STS_ASSUMED_FILE
+  if [[ -z $EXTERNAL_ID ]]; then
+    $AWSCLI sts assume-role --role-arn $ROLE \
+      --role-session-name ProwlerAssessmentSession \
+      --duration-seconds 3600 > $TEMP_STS_ASSUMED_FILE
+  else
+   $AWSCLI sts assume-role --role-arn $ROLE \
+      --role-session-name ProwlerAssessmentSession \
+      --duration-seconds 3600 \
+	  --external-id $EXTERNAL_ID> $TEMP_STS_ASSUMED_FILE
+  fi
 
   # set env variables with assumed role credentials
   export AWS_ACCESS_KEY_ID=$(cat $TEMP_STS_ASSUMED_FILE | jq -r '.Credentials.AccessKeyId')
