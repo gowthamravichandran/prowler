@@ -75,12 +75,13 @@ USAGE:
       -V                  show version number & exit
       -s                  show scoring report
       -R                  role to assume
+	  -I                  External ID for role
       -h                  this help
   "
   exit
 }
 
-while getopts ":hlLkp:r:c:g:f:m:M:E:enbVs:R:" OPTION; do
+while getopts ":hlLkp:r:c:g:f:m:M:E:enbVs:R:I:" OPTION; do
    case $OPTION in
      h )
         usage
@@ -131,6 +132,9 @@ while getopts ":hlLkp:r:c:g:f:m:M:E:enbVs:R:" OPTION; do
         ;;
      R )
         ROLE=$OPTARG
+        ;;
+     I )
+        EXTERNAL_ID=$OPTARG
         ;;
      V )
         echo "Prowler $PROWLER_VERSION"
