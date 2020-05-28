@@ -48,5 +48,5 @@ if [[ $REGION_OPT ]]; then
 elif [[ $REGION_CONFIG ]]; then
     REGION="$REGION_CONFIG"
 else
-    REGION="us-east-1"
+    REGION=""
 fi
