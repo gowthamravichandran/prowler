@@ -18,14 +18,16 @@ textPass(){
     if [[ $4 ]]; then
       REPREGION=$4
     else
-      REPREGION=$REGION
+    #   REPREGION=$REGION
+        REPREGION="unknown"
     fi
     echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}PASS${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1"
   elif [[ "$MODE" == "json" ]]; then
     if [[ $4 ]]; then
       REPREGION=$4
     else
-      REPREGION=$REGION
+    #   REPREGION=$REGION
+        REPREGION="unknown"
     fi
     jq -M -c \
     --arg PROFILE "$PROFILE" \
@@ -63,14 +65,16 @@ textInfo(){
     if [[ $4 ]]; then
       REPREGION=$4
     else
-      REPREGION=$REGION
+    #   REPREGION="$REGION"
+    REPREGION="unknown"
     fi
     echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}INFO${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1"
   elif [[ "$MODE" == "json" ]]; then
     if [[ $4 ]]; then
       REPREGION=$4
     else
-      REPREGION=$REGION
+    #   REPREGION=$REGION
+        REPREGION="unknown"
     fi
     jq -c \
     --arg PROFILE "$PROFILE" \
@@ -110,14 +114,16 @@ textFail(){
     if [[ $4 ]]; then
       REPREGION=$4
     else
-      REPREGION=$REGION
+    #   REPREGION=$REGION
+        REPREGION="unknown"
     fi
     echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}FAIL${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1"
   elif [[ "$MODE" == "json" ]]; then
     if [[ $4 ]]; then
       REPREGION=$4
     else
-      REPREGION=$REGION
+    #   REPREGION=$REGION
+        REPREGION="unknown"
     fi
     jq -c \
     --arg PROFILE "$PROFILE" \

@@ -18,7 +18,7 @@ try_assume_role(){
 	  --external-id $EXTERNAL_ID> $TEMP_STS_ASSUMED_FILE
   res=$?
   fi
-
+ 
   # a non-zero res means a failed execution
   if [ "$res" -ne "0" ]; then 
     return $res
