@@ -19,6 +19,7 @@ try_assume_role(){
   res=$?
   fi
 
+  # a non-zero res means a failed execution
   if [ "$res" -ne "0" ]; then 
     return $res
   fi
