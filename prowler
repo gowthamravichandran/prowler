@@ -182,6 +182,9 @@ EXPIRYTIME=0
 
 if [[ "$EXPIRYTIME" < "$CURRENTTIME" ]];then
   try_assume_role
+   if [ "$?" -ne "0" ]; then
+    exit 255
+  fi
 fi
 
 # Get a list of all available AWS Regions
@@ -234,6 +237,9 @@ execute_check() {
     unset EXPIRYTIME
 
     try_assume_role
+     if [ "$?" -ne "0" ]; then
+    exit 255
+  fi
     
   fi
 

@@ -9,11 +9,19 @@ try_assume_role(){
     $AWSCLI sts assume-role --role-arn $ROLE \
       --role-session-name ProwlerAssessmentSession \
       --duration-seconds 3600 > $TEMP_STS_ASSUMED_FILE
+  
+  res=$?
   else
    $AWSCLI sts assume-role --role-arn $ROLE \
       --role-session-name ProwlerAssessmentSession \
       --duration-seconds 3600 \
 	  --external-id $EXTERNAL_ID> $TEMP_STS_ASSUMED_FILE
+  res=$?
+  fi
+ 
+  # a non-zero res means a failed execution
+  if [ "$res" -ne "0" ]; then 
+    return $res
   fi
 
   # set env variables with assumed role credentials
