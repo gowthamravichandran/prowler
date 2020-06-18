@@ -187,12 +187,28 @@ if [[ "$EXPIRYTIME" < "$CURRENTTIME" ]];then
   fi
 fi
 
-# Get a list of all available AWS Regions
-REGIONS=$($AWSCLI ec2 describe-regions --query 'Regions[].RegionName' \
-  --output text \
-  $PROFILE_OPT \
-  --region $REGION \
-  --region-names $FILTERREGION)
+region_temp="none"
+is_us_east_1_restricted=0
+REGIONS_TEMP=(us-east-1 us-east-2 us-west-1 us-west-2 af-south-1 ap-east-1 ap-south-1 ap-northeast-2 ap-northeast-1 ap-southeast-1 ap-southeast-2 ca-central-1 eu-north-1 eu-west-3 eu-west-2 eu-west-1 eu-central-1 me-south-1 sa-east-1)
+for i in ${REGIONS_TEMP[@]}
+do
+  # Get a list of all available AWS Regions
+  REGIONS=$($AWSCLI ec2 describe-regions --query 'Regions[].RegionName' $PROFILE_OPT \
+    --output text --region $i)
+  val=$?
+  if [[ "$i" -eq "us-east-1" && "$val" -ne "0" ]]; then 
+    is_us_east_1_restricted=1
+  fi
+  if [[ "$val" -eq "0" ]]; then
+      region_temp="$i"
+    break
+  fi
+done
+REGION="$region_temp"
+
+if [[ "$REGION" -eq "none" ]]; then
+  exit 255
+fi
 
 # Load all of the groups of checks inside groups folder named as "groupNumber*"
 for group in $(ls $PROWLER_DIR/groups/group[0-9]*|grep -v groupN_sample); do
